@@ -15,7 +15,7 @@ import traceback
 import getopt
 import base64
 
-VERSION_NAME = "FxxkSsxx 1.4"
+VERSION_NAME = "FxxkSsxx 1.5"
 
 answer_dictionary = {}
 hit_count = 0
@@ -30,6 +30,7 @@ random_mode_enabled = True
 inform_enabled = False
 auto_refresh_token_enabled = False
 expire_time = -1
+way = ""
 
 
 class MyError(Exception):
@@ -41,45 +42,57 @@ class MyError(Exception):
         return "{}({})".format(self.msg, self.code)
 
 
-def SubmitVerification(header, code="HD1bhUGI4d/FhRfIX4m972tZ0g3jRHIwH23ajyre9m1Jxyw4CQ1bMKeIG5T/voFOsKLmnazWkPe6yBbr+juVcMkPwqyafu4JCDePPsVEbVSjLt8OsiMgjloG1fPKANShQCHAX6BwpK33pEe8jSx55l3Ruz/HfcSjDLEHCATdKs4="):
+def SubmitVerification(header, code=None):
+    if code == None:
+        if way == "1":
+            code = "HD1bhUGI4d/FhRfIX4m972tZ0g3jRHIwH23ajyre9m1Jxyw4CQ1bMKeIG5T/voFOsKLmnazWkPe6yBbr+juVcMkPwqyafu4JCDePPsVEbVSjLt8OsiMgjloG1fPKANShQCHAX6BwpK33pEe8jSx55l3Ruz/HfcSjDLEHCATdKs4="
+        elif way == "2":
+            code = "BzPdXIQzu5Z2GHMkgWt9iBUQTbo2EWmw7tIuDaIEa4EQSXziGlUmS4aqrzw8Pzo51P+YtbUpAaqKLWF/rG4G41TnHGtItm7NkU90024LysxGUzh4jhy9YO0ivJZ3MSv+WcA8u/1TacORW4cvm9uBejdpTBOdWsDFOjJpTdCkYYE="
+    
     submit_data = {
         "activity_id": "5f71e934bcdbf3a8c3ba5061",
         "mode_id": mode_id,
-        "way": "1",
+        "way": way,
         "code": code
     }
     url = "https://ssxx.univs.cn/cgi-bin/save/verification/code/"
     response = requests.post(url, json=submit_data, headers=header)
     result = json.loads(response.text)
     if result["code"] != 0:
-        raise MyError(result["code"], "提交验证码失败：" + str(result))
+        raise MyError(result["code"], "提交验证码失败: " + str(result))
 
 
-def CheckVerification(header, code="E5ZKeoD8xezW4TVEn20JVHPFVJkBIfPg+zvMGW+kx1s29cUNFfNka1+1Fr7lUWsyUQhjiZXHDcUhbOYJLK4rS5MflFUvwSwd1B+1kul06t1z9x0mfxQZYggbnrJe3PKEk4etwG/rm3s3FFJd/EbFSdanfslt41aULzJzSIJ/HWI="):
+def CheckVerification(header, code=None):
+    if code == None:
+        if way == "1":
+            code = "E5ZKeoD8xezW4TVEn20JVHPFVJkBIfPg+zvMGW+kx1s29cUNFfNka1+1Fr7lUWsyUQhjiZXHDcUhbOYJLK4rS5MflFUvwSwd1B+1kul06t1z9x0mfxQZYggbnrJe3PKEk4etwG/rm3s3FFJd/EbFSdanfslt41aULzJzSIJ/HWI="
+        elif way == "2":
+            code = "caap/GndfVmhoudMEhf1C7vjG5Hyc1gMLPNZAT6yfdx2kt8jOTCzUYsbd1dyqUYRCv4/rLZGf++4HIK/7Q2/ZWlOkQDTV9gxOOHjwkKqkF/oZZIOg0714FXPZj8eet44bp481QRDyjqBzwGAM3xzQut5bLqeTLkayexsu2Q3P9g="
+    
     submit_data = {
         "activity_id": "5f71e934bcdbf3a8c3ba5061",
         "mode_id": mode_id,
-        "way": "1",
+        "way": way,
         "code": code
     }
     url = "https://ssxx.univs.cn/cgi-bin/check/verification/code/"
     response = requests.post(url, json=submit_data, headers=header)
     result = json.loads(response.text)
     if result["code"] != 0:
-        raise MyError(result["code"], "检查验证码失败：" + str(result))
+        raise MyError(result["code"], "检查验证码失败: " + str(result))
 
     return result["status"]
 
 
 def ParseToken(token):
     data = token.split('.')
-    userInfo = json.loads(str(base64.b64decode(data[1] + "=="), "utf-8"))
+    user_info = json.loads(str(base64.b64decode(data[1] + "=="), "utf-8"))
 
     token_info = {
-        "name": userInfo["name"],
-        "uid": userInfo["uid"],
-        "time": int(userInfo["iat"]),
-        "expire": int(userInfo["exp"])
+        "name": user_info["name"],
+        "uid": user_info["uid"],
+        "time": int(user_info["iat"]),
+        "expire": int(user_info["exp"])
     }
     return token_info
 
@@ -90,7 +103,7 @@ def RefreshToken(header):
 
     result = json.loads(response.text)
     if result["code"] != 0:
-        raise MyError(result["code"], "更新token失败：" + str(result["message"]))
+        raise MyError(result["code"], "更新token失败: " + str(result["message"]))
 
     new_token = result["token"]
 
@@ -144,9 +157,9 @@ def BuildHeader(token):
 
 
 def PrintQuizObject(quiz_object):
-    print("问题ID列表：")
+    print("问题ID列表: ")
     for i in range(0, 20):
-        print("问题", i, "：", quiz_object["question_ids"][i])
+        print("问题", i, ": ", quiz_object["question_ids"][i])
 
 
 def StartQuiz(header):
@@ -155,8 +168,10 @@ def StartQuiz(header):
 
     print("尝试开始考试……")
 
-    url = "https://ssxx.univs.cn/cgi-bin/race/beginning/?activity_id=5f71e934bcdbf3a8c3ba5061&mode_id={}&way=1".format(
-        mode_id)
+    url = "https://ssxx.univs.cn/cgi-bin/race/beginning/?activity_id=5f71e934bcdbf3a8c3ba5061&mode_id={}&way={}".format(
+        mode_id,
+        way
+    )
 
     for fail in [0, 1, 2]:    # 最多尝试等待3次
         response = requests.request("GET", url, headers=header)
@@ -164,7 +179,7 @@ def StartQuiz(header):
         status_code = quiz_object["code"]
 
         if status_code == 0:
-            print("开始考试成功，本次考试信息如下：")
+            print("开始考试成功，本次考试信息如下: ")
             print("race_code", quiz_object["race_code"])
 
             return quiz_object["question_ids"], quiz_object["race_code"]
@@ -176,7 +191,7 @@ def StartQuiz(header):
             time.sleep(600)
 
         else:
-            raise MyError(status_code, "开始考试失败：" + str(quiz_object))
+            raise MyError(status_code, "开始考试失败: " + str(quiz_object))
 
 
 def GetTitleMd5(title):
@@ -189,8 +204,11 @@ def GetTitleMd5(title):
 
 
 def GetQuestionDetail(question_id, header):
-    url = "https://ssxx.univs.cn/cgi-bin/race/question/?activity_id=5f71e934bcdbf3a8c3ba5061&question_id={}&mode_id={}&way=1".format(
-        question_id, mode_id)
+    url = "https://ssxx.univs.cn/cgi-bin/race/question/?activity_id=5f71e934bcdbf3a8c3ba5061&question_id={}&mode_id={}&way={}".format(
+        question_id,
+        mode_id,
+        way
+    )
 
     response = requests.request("GET", url, headers=header)
 
@@ -199,8 +217,8 @@ def GetQuestionDetail(question_id, header):
 
     question_detail_object = json.loads(response.text)
     if question_detail_object["code"] != 0:
-        raise MyError(question_detail_object["code"], "获取题目信息失败。问题ID：" +
-                      question_id + "错误信息：" + str(question_detail_object))
+        raise MyError(question_detail_object["code"], "获取题目信息失败。问题ID: " +
+                      question_id + "错误信息: " + str(question_detail_object))
 
     print("获取题目信息成功。")
 
@@ -225,7 +243,7 @@ def BuildAnswerObject(question):
         "question_id": question["id"],
         "answer": None,
         "mode_id": mode_id,
-        "way": "1"
+        "way": way
     }
 
     if answer_dictionary.__contains__(question["title"]):
@@ -272,7 +290,7 @@ def SubmitAnswer(answer_object, header):
         answer_dictionary[answer_object[1]["title"]] = []
 
     for i in result_object["data"]["correct_ids"]:
-        print("服务器返回的正确答案：", i)
+        print("服务器返回的正确答案: ", i)
         for j in answer_object[1]["answer_list"]:
             if i == j[0]:
                 print("已在问题列表中找到该答案，元组为", j)
@@ -292,19 +310,19 @@ def FinishQuiz(race_code, header):
         "POST", url, headers=header, data=payload).text)
     fail = 0
     while result["code"] != 0:
-        print("完成考试时出错，错误代码：", result)
+        print("完成考试时出错，错误代码: ", result)
         err_code = result["code"]
         if err_code == 1001 or err_code == 1002:
             raise MyError(err_code, "请重新登录")
         fail += 1
         if fail > 5:
-            raise MyError(err_code, "完成时出错：" + str(result))
+            raise MyError(err_code, "完成时出错: " + str(result))
         time.sleep(0.5)
         result = json.loads(requests.request(
             "POST", url, headers=header, data=payload).text)
 
-    print("回答完毕，本次得分：", result["data"]["owner"]
-          ["correct_amount"], "答案库命中数：", hit_count)
+    print("回答完毕，本次得分: ", result["data"]["owner"]
+          ["correct_amount"], "答案库命中数: ", hit_count)
 
 
 def Pause():
@@ -339,7 +357,7 @@ def Start(token):
                         time.sleep(float(random.randrange(1500, 3000)) / 1000)
                 except MyError as err:
                     if err.code == 2104: # 2104: Question not exist
-                        SendNotification("问题不存在，已跳过：" + question_list[i])
+                        SendNotification("问题不存在，已跳过: " + question_list[i])
                         pass
                     else:
                         raise err
@@ -349,7 +367,7 @@ def Start(token):
                         print("验证码已通过")
                     else:
                         SubmitVerification(header)
-                        print("验证码状态：", CheckVerification(header))
+                        print("验证码状态: ", CheckVerification(header))
 
             FinishQuiz(race_code, header)
             time.sleep(float(random.randrange(700, 2000)) / 1000)
@@ -368,11 +386,11 @@ def Start(token):
 
         if err.code == 1001 or err.code == 1002:
             print(tag, "登录无效，通知重新登录")
-            SendNotification("请重新登录（代码：{}）".format(err.code))
+            SendNotification("请重新登录（代码: {}）".format(err.code))
         elif err.code == 1005:
             print(tag, "当前token已退出登录，请重新获取")
         else:
-            msg = "已停止，原因：" + str(err)
+            msg = "已停止，原因: " + str(err)
             print(tag, msg)
             SendNotification(msg)
     except Exception as err:
@@ -437,11 +455,11 @@ if __name__ == "__main__":
             Pause()
             sys.exit()
 
-    print("当前版本：" + VERSION_NAME)
-    print("打开网页端：https://ssxx.univs.cn/client/detail/5f71e934bcdbf3a8c3ba5061 认证登录成功后")
+    print("当前版本: " + VERSION_NAME)
+    print("打开网页端: https://ssxx.univs.cn/client/detail/5f71e934bcdbf3a8c3ba5061 认证登录成功后")
     print("在地址栏输入javascript:document.write(localStorage.token)复制显示的内容")
     print("或按F12，转到Console页面，输入localStorage.token后回车，输出的结果复制下来并输入即可")
-    token = input("请输入token：").strip()
+    token = input("请输入token: ").strip()
     try:
         if token.find("token:") == 0:
             token = token[6:]
@@ -451,8 +469,13 @@ if __name__ == "__main__":
         expire_time = token_info["expire"]
         print(token_info["name"], "，欢迎使用！")
         print("uid: ", token_info["uid"])
-        print("token有效期剩余：", time.strftime(
+        print("token有效期剩余: ", time.strftime(
             "%Hh %Mm %Ss", time.gmtime(expire_time - time.time())))
+
+        print("请选择模式(只输入序号, 无需输入后面的文字):")
+        print("1: 个人模式, 如果没有加入团队或者不清楚这个选项是干什么用的请选择该模式")
+        print("2: 团队模式, 当且仅当你加入团队并需要为团队刷分时使用这个模式")
+        way = input()
     except Exception as err:
         print(traceback.format_exc())
         Pause()
