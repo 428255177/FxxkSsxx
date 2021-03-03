@@ -11,22 +11,5 @@
 
 **致以我最真诚的鄙视。**
 
-## 运行要求
-
-脑子和良心
-
-## 使用方法
-
-首先下载[FxxkSsxx.exe](https://github.com/deximy/FxxkSsxx/releases/download/1.4/FxxkSsxx.exe)和answer.txt到本地随便一个地方，在同一个文件夹里就行
-
-打开网页端：https://ssxx.univs.cn/client/detail/5f71e934bcdbf3a8c3ba5061
-认证登录成功后在页面随便一个地方右键，点击Inspect/审查元素
-![](https://i.loli.net/2020/12/14/vUCLgQKVTAabDhf.png)
-
-在新弹出的窗口点击Console/控制台，并在最下方输入`localStorage.token`
-![](https://i.loli.net/2020/12/14/5w3dIYbnulcmAgj.png)
-
-回车，将浏览器输出的内容中**双引号之内**的文本复制出来
-![](https://i.loli.net/2021/02/05/dIN5hosr2OjJ8LR.png)
-
-运行FxxkSsxx.exe，将刚刚拿到的token粘贴进控制台，回车，程序会自动开始答题，觉得分数差不多了**直接停止程序运行**即可
+# 本源码仅供学习使用，不提供任何可执行程序。
+# 任何修改、利用本源码的行为导致的任何后果与本人无关。
