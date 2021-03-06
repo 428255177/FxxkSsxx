@@ -126,10 +126,17 @@ def SendNotification(msg):
 
 def ReadAnswerFromFile():
     global answer_dictionary
-    answer_file = open('answer.txt', 'r')
-    answer_dictionary = json.loads(answer_file.read())
-    print("已读取", len(answer_dictionary.items()), "个答案！")
-    answer_file.close()
+    try:
+        answer_file = open("answer.txt", "r")
+        answer_dictionary = json.loads(answer_file.read())
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        answer_file = open("answer.txt", "w+")
+        answer_file.write("{}")
+        answer_file.seek(0, 0)
+        answer_dictionary = json.loads(answer_file.read())
+    finally:
+        print("已读取", len(answer_dictionary.items()), "个答案！")
+        answer_file.close()
 
 
 def SaveAnswerToFile():
@@ -472,7 +479,7 @@ if __name__ == "__main__":
         print("token有效期剩余: ", time.strftime(
             "%Hh %Mm %Ss", time.gmtime(expire_time - time.time())))
 
-        print("请选择模式(只输入序号, 无需输入后面的文字):")
+        print("请选择模式(只输入序号, 无需输入文字):")
         print("1: 个人模式, 如果没有加入团队或者不清楚这个选项是干什么用的请选择该模式")
         print("2: 团队模式, 当且仅当你加入团队并需要为团队刷分时使用这个模式")
         way = input()
